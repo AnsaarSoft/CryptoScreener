@@ -1,0 +1,252 @@
+﻿@page "/managerorder"
+@inject OrderServices service
+@inject ISnackbar toast
+@inject NavigationManager navigation
+@inject IDialogService dlgService
+
+<PageTitle>Manage Orders</PageTitle>
+
+@if (flgpageload)
+{
+    <div class="center-screen">
+        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+        <MudText Class="ms-2">Processing</MudText>
+    </div>
+}
+else
+{
+    <MudContainer Class="mt-4 px-8 d-flex" MaxWidth="MaxWidth.False">
+        <MudGrid>
+            <MudItem xs="12" sm="12" md="12">
+                <MudBreadcrumbs Items="BreadItems" />
+            </MudItem>
+            <MudItem xs="12" sm="8">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <EditForm Model="@model" OnValidSubmit="SaveOrder">
+                        <DataAnnotationsValidator />
+                        <MudGrid>
+                            <MudItem xs="12" sm="8">
+                                <MudCard>
+                                    <MudCardContent>
+                                        <MudTextField Label="Token name" HelperText="Token name for eg Btc" Variant="Variant.Outlined"
+                                                      @bind-Value="model.Name" For="@(() => model.Name)" />
+                                        <MudTextField Label="Symbol" HelperText="Token symbol for eg BtcUsdt" Variant="Variant.Outlined"
+                                                      @bind-Value="model.Symbol" For="@(() => model.Symbol)" />
+                                        <MudTextField Label="Quantity" HelperText="Quanity" Class="mt-3" Variant="Variant.Outlined"
+                                                      @bind-Value="model.Quantity" For="@(() => model.Quantity)" />
+                                        <MudTextField Label="Buy Price" HelperText="Buy Price" Class="mt-3" Variant="Variant.Outlined"
+                                                      @bind-Value="model.BuyPrice" For="@(() => model.BuyPrice)" />
+                                        <MudTextField Label="Amount" HelperText="Amount" Class="mt-3" ReadOnly="true" Variant="Variant.Outlined"
+                                                      @bind-Value="model.InvestedAmount" For="@(() => model.InvestedAmount)" />
+                                    </MudCardContent>
+                                    <MudCardActions>
+                                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="">Save</MudButton>
+                                        <MudButton ButtonType="ButtonType.Reset" Variant="Variant.Filled" Color="Color.Secondary" Class="ml-4">Cancel</MudButton>
+                                        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Default" Class="ml-4" OnClick="GotoUploadPage">Upload</MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem xs="12" sm="4">
+                                <MudPaper Class="pa-4 mud-height-full">
+                                    <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                                    @if (success)
+                                    {
+                                        <MudText Color="Color.Success">Success</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText Color="@Color.Error">
+                                            <ValidationSummary />
+                                        </MudText>
+                                    }
+                                </MudPaper>
+                            </MudItem>
+                        </MudGrid>
+                    </EditForm>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Class="pa-0 fill-height">
+
+                    <MudDataGrid Class="custome-class-muddatagrid"  Items="@collection" HorizontalScrollbar="true" Bordered="true" Dense="true" Filterable="false" QuickFilter="FilterGrid">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">List of Tokkens</MudText>
+                            <MudSpacer />
+                            <MudTextField @bind-Value="SearchText" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                        </ToolBarContent>
+                        <Columns >
+                            <TemplateColumn StickyLeft="true">
+                                <CellTemplate>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Medium" OnClick="@(() => EditOrder(context.Item.Id))" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Error" Size="Size.Medium" OnClick="@(() => DeleteOrder(context.Item.Id))" />
+                                </CellTemplate>
+                            </TemplateColumn>
+
+                            <PropertyColumn Property="x => x.Name" Title="Symbol"  />
+                            <PropertyColumn Property="x => x.Symbol" Title="Token"  />
+                            <PropertyColumn Property="x => x.BuyPrice" Title="Price"  />
+                            <PropertyColumn Property="x => x.Quantity" title="Quantity"  />
+                            <PropertyColumn Property="x => x.InvestedAmount" Format="C2" Title="Invested"  />
+                        </Columns>
+                        <PagerContent>
+                            <MudDataGridPager T="OrderModel" />
+                        </PagerContent>
+                    </MudDataGrid>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+}
+
+@code {
+    bool flgpageload = false;
+    bool success;
+    List<OrderModel> collection = new();
+    OrderModel model = new();
+    string SearchText = string.Empty;
+
+    private List<BreadcrumbItem> BreadItems =
+    [
+        new("Dashboard", href: "/dashboard"),
+        new("Order Management", href: "#")
+    ];
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //return base.OnInitializedAsync();
+        flgpageload = true;
+        collection = await service.GetAllOrders() ?? new();
+        if (collection is null) collection = new();
+        await Task.Delay(2000);
+        flgpageload = false;
+    }
+
+    public async Task SaveOrder()
+    {
+        try
+        {
+            if (model.Id > 0)
+            {
+                var result = await service.UpdateOrder(model);
+                if (result is null)
+                {
+                    toast.Add("Operation failed.", Severity.Error);
+                }
+                else
+                {
+                    toast.Add("Operation successfully completed.", Severity.Success);
+                    model = new();
+                    StateHasChanged();
+                }
+            }
+            else
+            {
+                var result = await service.AddOrder(model);
+                if (result is null)
+                {
+                    toast.Add("Operation failed.", Severity.Error);
+                }
+                else
+                {
+                    toast.Add("Operation successfully completed.", Severity.Success);
+                    model = new();
+                    StateHasChanged();
+                }
+            }
+            collection = await service.GetAllOrders() ?? new();
+        }
+        catch
+        {
+
+        }
+    }
+
+    public async Task EditOrder(int id)
+    {
+        try
+        {
+            if (id > 0)
+            {
+                model = await service.GetOrderById(id);
+                if (model is null)
+                {
+                    toast.Add("Record not found.", Severity.Warning);
+                    return;
+                }
+
+            }
+        }
+        catch
+        {
+
+        }
+    }
+
+    public async Task DeleteOrder(int id)
+    {
+        try
+        {
+            if (id > 0)
+            {
+                var confirmed = await DeleteDialogCall();
+                
+                if (confirmed)
+                {
+                    var result1 = await service.DeleteOrder(id);
+                    bool isdeleted;
+                    if (result1 is null) { isdeleted = false; } else { isdeleted = result1.HasValue; }
+                    if (isdeleted)
+                    {
+                        toast.Add("Records is deleted.", Severity.Warning);
+                        collection = await service.GetAllOrders() ?? new();
+                        return;
+                    }
+                }
+
+            }
+        }
+        catch
+        {
+
+        }
+    }
+
+    private Func<OrderModel, bool> FilterGrid => x =>
+    {
+        if (string.IsNullOrWhiteSpace(SearchText))
+            return true;
+
+        if (x.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (x.Symbol.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    private void GotoUploadPage() => navigation.NavigateTo("/uploadtoken");
+
+    private async Task<bool> DeleteDialogCall()
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", "Do you really want to delete these records? This process cannot be undone." },
+            { "ButtonText", "Delete" },
+            { "Color", Color.Error }
+        };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var dialogRef = dlgService.Show<PromptDialog>("Delete", parameters, options);
+        var result = await dialogRef.Result;
+
+        return !result.Canceled && (result.Data is bool ok && ok);
+    }
+
+}

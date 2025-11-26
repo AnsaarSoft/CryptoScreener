@@ -1,0 +1,112 @@
+﻿@page "/"
+@using Portfolio.Models.Model
+@layout LoginLayout
+
+@inject ISnackbar toast
+@inject NavigationManager navigation
+@inject ISessionStorageService session
+@inject UserServices repo
+
+<PageTitle>Login</PageTitle>
+
+@if (!flgpageload)
+{
+    <div class="center-screen">
+        <MudCard Class="CenterClass" Style="width: 450px; height: 350px">
+            <MudCardContent>
+                <EditForm Model="model" OnValidSubmit="SubmitLogin" FormName="register">
+                    <MudGrid>
+                        <MudItem xs="12" class="d-flex justify-center">
+                            <MudText Typo="Typo.h4" Class="mb-4">Login</MudText>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="model.usercode" Label="Usercode" Variant="Variant.Filled" FullWidth="true" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="model.password" Label="Password" Variant="Variant.Filled" FullWidth="true" Required="true" InputType="InputType.Password" />
+                        </MudItem>
+                        <MudItem xs="12" class="d-flex justify-center mt-4">
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" FullWidth="true" Color="Color.Primary">Login</MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </EditForm>
+            </MudCardContent>
+        </MudCard>
+    </div>
+}
+else
+{
+    <div class="center-screen">
+        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+        <MudText Class="ms-2">Processing</MudText>
+    </div>
+}
+
+
+@code {
+    public bool flgpageload = true;
+    public RegisterModel model = new RegisterModel();
+
+    async Task CreateUser()
+    {
+        var result = await repo.GetByUsercode("admin");
+        if(!result)
+        {
+            UserModel user = new();
+            user.Usercode = "admin";
+            user.Password = "super@123";
+            user.Username = "Muhammad Faisal Maqsood";
+            user.Email = "mfmlive@gmail.com";
+            user.Phone = "923453289850";
+
+            var response = await repo.Add(user);
+        }
+    }
+
+    public async Task SubmitLogin()
+    {
+        if (string.IsNullOrEmpty(model.usercode))
+        {
+            toast.Add("Usercode is required.", Severity.Warning);
+            return;
+        }
+        if (string.IsNullOrEmpty(model.password))
+        {
+            toast.Add("Password is required.", Severity.Warning);
+            return;
+        }
+        var result = await repo.ValidateLogin(model);
+        if (result is not null)
+        {
+
+            await session.SetItemAsync<UserModel>("user", result);
+            toast.Add("Login successful.", Severity.Success);
+            await Task.Delay(2000).ContinueWith(_ =>
+            {
+                InvokeAsync(() => navigation.NavigateTo("/dashboard"));
+            });
+        }
+        else
+        {
+            toast.Add("Invalid usercode or password.", Severity.Error);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //await Task.Delay(2000);
+        await CreateUser();
+        flgpageload = false;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        //return base.OnAfterRenderAsync(firstRender);
+        var user = await session.GetItemAsync<UserModel>("user");
+        if (user is not null)
+        {
+            navigation.NavigateTo("dashboard", true);
+        }
+    }
+}

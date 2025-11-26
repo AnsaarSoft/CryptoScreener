@@ -1,0 +1,41 @@
+﻿<MudPaper Class="pa-4" Elevation="2" Style="border-radius: 6px; height: 150px">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudGrid Justify="Justify.SpaceBetween" Style="height:150px; display: d-flex; align-items: center;">
+                <MudItem>
+                    <MudAvatar Size="Size.Large" Class="mud-theme-primary" Style="font-size: 24px;">
+                        @if (icontype == 1)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.AccountBalance" />
+                        }
+                        else if (icontype == 2)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.PriceCheck" />
+                        }
+                        else if (icontype == 3)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Wallet" />
+                        }
+                        else if (icontype == 4)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" />
+                        }
+                    </MudAvatar>
+                </MudItem>
+                <MudItem>
+                    <MudText Typo="Typo.h4" Class="mb-1 fw-normal">@amountvalue</MudText>
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">@tokenname</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public int icontype { get; set; }
+    [Parameter]
+    public string amountvalue { get; set; } = string.Empty;
+    [Parameter]
+    public string tokenname { get; set; } = string.Empty;
+}

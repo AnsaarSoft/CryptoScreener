@@ -1,0 +1,128 @@
+﻿@page "/dashboard"
+@layout MainLayout
+@inject NavigationManager navigation
+@inject ISnackbar toast
+@inject DashboardServices service
+
+<PageTitle>Dashboard</PageTitle>
+
+
+<MudGrid>
+    <MudItem xs="12" sm="12" md="12">
+
+    </MudItem>
+    <MudItem xs="12" sm="12" md="12">
+        <MudGrid>
+            <MudItem xs="3" sm="3" md="3">
+                <TodayStatus icontype="1" amountvalue="@investedamount.ToString("N2")" tokenname="Investment" />
+            </MudItem>
+            <MudItem xs="3" sm="3" md="3">
+                <TodayStatus icontype="2" amountvalue="@currentinvestment.ToString("N2")" tokenname="Assests" />
+            </MudItem>
+            <MudItem xs="3" sm="3" md="3">
+                <TodayStatus icontype="3" amountvalue="@(marketpercent < 0 ? $"({Math.Abs(marketpercent).ToString("N2")}) %" : $"{marketpercent.ToString("N2")} %")" tokenname="Percentage" />
+            </MudItem>
+            <MudItem xs="3" sm="3" md="3">
+                <TodayStatus icontype="4" amountvalue="@(marketstatus < 0 ? $"({Math.Abs(marketstatus).ToString("N2")})" : $"{marketstatus.ToString("N2")}")" tokenname="Market Direction" />
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="12" lg="12">
+        <MudPaper Elevation="2">
+            <MudDataGrid Items="@collection" HorizontalScrollbar="true" Bordered="true" Striped=true Dense="true" SortMode="SortMode.None">
+                <ToolBarContent>
+                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="ManagerOrders">Add</MudButton>
+                </ToolBarContent>
+                <Columns>
+                    <PropertyColumn Property="x => x.Name" Title="Symbol" StickyLeft="true" />
+                    <PropertyColumn Property="x => x.BuyPrice" Title="Buy Price" />
+                    <PropertyColumn Property="x => x.CurrentPrice" Title="Current Price" />
+                    <PropertyColumn Property="x => x.Quantity" title="Quantity" />
+                    <PropertyColumn Property="x => x.Profit" Format="P2" Title="Profit" CellStyleFunc="cellStyleFunc" />
+                    <PropertyColumn Property="x => x.InvestedAmount" Format="N2" Title="Invested" AggregateDefinition="agrtSum" />
+                    <PropertyColumn Property="x => x.CurrentAmount" Format="N2" Title="Portfolio" AggregateDefinition="agrtSum" />
+                </Columns>
+            </MudDataGrid>
+        </MudPaper>
+    </MudItem>
+
+</MudGrid>
+
+
+
+@code {
+
+    public TokenModel btc { get; set; } = new TokenModel();
+    public TokenModel eth { get; set; } = new TokenModel();
+    public TokenModel sol { get; set; } = new TokenModel();
+    public TokenModel xrp { get; set; } = new TokenModel();
+    public List<OrderModel> collection = new();
+    public double investedamount = 0;
+    public double currentinvestment = 0;
+    public double marketstatus = 0;
+    public double marketpercent = 0;
+
+    protected async override Task OnInitializedAsync()
+    {
+        //return base.OnInitializedAsync();
+        collection = await service.GetUpdatedOrder();
+
+        if (collection is null)
+        {
+            toast.Add("Failed to load order data", Severity.Error);
+            return;
+        }
+        else
+        {
+            foreach (var price in collection)
+            {
+                switch (price.Name.ToLower())
+                {
+                    case "btcusdt":
+                        btc.Price = price.CurrentPrice;
+                        break;
+                    case "ethusdt":
+                        eth.Price = price.CurrentPrice;
+                        break;
+                    case "solusdt":
+                        sol.Price = price.CurrentPrice;
+                        break;
+                    case "xrpusdt":
+                        xrp.Price = price.CurrentPrice;
+                        break;
+                    default:
+                        break;
+                }
+                investedamount += price.InvestedAmount;
+                currentinvestment += price.CurrentAmount;
+            }
+            marketstatus = currentinvestment - investedamount;
+            marketpercent = (currentinvestment - investedamount) / investedamount * 100;
+        }
+    }
+
+    AggregateDefinition<OrderModel> agrtSum = new AggregateDefinition<OrderModel>
+    {
+        Type = AggregateType.Sum,
+        DisplayFormat = "Total {value}",
+        NumberFormat = "N2"
+    };
+
+    private Func<OrderModel, string> cellStyleFunc => x =>
+    {
+        string style = "";
+
+        if (x.Profit > 0)
+            style += "color:#5abf7e;";
+
+        else if (x.Profit < 0)
+            style += "color:#ff0040;";
+        return style;
+    };
+
+    private void ManagerOrders()
+    {
+        navigation.NavigateTo("/managerorder");
+    }
+
+}
