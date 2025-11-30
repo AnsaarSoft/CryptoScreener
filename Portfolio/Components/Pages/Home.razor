@@ -12,23 +12,25 @@
 
     </MudItem>
     <MudItem xs="12" sm="12" md="12">
-        <MudGrid>
-            <MudItem xs="3" sm="3" md="3">
-                <TodayStatus icontype="1" amountvalue="@investedamount.ToString("N2")" tokenname="Investment" />
-            </MudItem>
-            <MudItem xs="3" sm="3" md="3">
-                <TodayStatus icontype="2" amountvalue="@currentinvestment.ToString("N2")" tokenname="Assests" />
-            </MudItem>
-            <MudItem xs="3" sm="3" md="3">
-                <TodayStatus icontype="3" amountvalue="@(marketpercent < 0 ? $"({Math.Abs(marketpercent).ToString("N2")}) %" : $"{marketpercent.ToString("N2")} %")" tokenname="Percentage" />
-            </MudItem>
-            <MudItem xs="3" sm="3" md="3">
-                <TodayStatus icontype="4" amountvalue="@(marketstatus < 0 ? $"({Math.Abs(marketstatus).ToString("N2")})" : $"{marketstatus.ToString("N2")}")" tokenname="Market Direction" />
-            </MudItem>
-        </MudGrid>
+        <MudPaper Class="pa-4">
+            <MudGrid>
+                <MudItem xs="3" sm="3" md="3">
+                    <TodayStatus icontype="1" amountvalue="@investedamount.ToString("N2")" tokenname="Investment" />
+                </MudItem>
+                <MudItem xs="3" sm="3" md="3">
+                    <TodayStatus icontype="2" amountvalue="@currentinvestment.ToString("N2")" tokenname="Assests" />
+                </MudItem>
+                <MudItem xs="3" sm="3" md="3">
+                    <TodayStatus icontype="3" amountvalue="@(marketpercent < 0 ? $"({Math.Abs(marketpercent).ToString("N2")}) %" : $"{marketpercent.ToString("N2")} %")" tokenname="Percentage" />
+                </MudItem>
+                <MudItem xs="3" sm="3" md="3">
+                    <TodayStatus icontype="4" amountvalue="@(marketstatus < 0 ? $"({Math.Abs(marketstatus).ToString("N2")})" : $"{marketstatus.ToString("N2")}")" tokenname="Market Direction" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
     </MudItem>
-    <MudItem xs="12" sm="12" md="12" lg="12">
-        <MudPaper Elevation="2">
+    <MudItem xs="12" sm="12" md="12">
+        <MudPaper Class="pa-2">
             <MudDataGrid Items="@collection" HorizontalScrollbar="true" Bordered="true" Striped=true Dense="true" SortMode="SortMode.None">
                 <ToolBarContent>
                     <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" OnClick="ManagerOrders">Add</MudButton>

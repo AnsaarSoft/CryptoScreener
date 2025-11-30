@@ -20,12 +20,12 @@ else
             <MudItem xs="12" sm="12" md="12">
                 <MudBreadcrumbs Items="BreadItems" />
             </MudItem>
-            <MudItem xs="12" sm="8">
+            <MudItem xs="12" sm="12" md="12">
                 <MudPaper Elevation="2" Class="pa-4">
                     <EditForm Model="@model" OnValidSubmit="SaveOrder">
                         <DataAnnotationsValidator />
                         <MudGrid>
-                            <MudItem xs="12" sm="8">
+                            <MudItem xs="12" sm="6" md="6">
                                 <MudCard>
                                     <MudCardContent>
                                         <MudTextField Label="Token name" HelperText="Token name for eg Btc" Variant="Variant.Outlined"
@@ -46,7 +46,7 @@ else
                                     </MudCardActions>
                                 </MudCard>
                             </MudItem>
-                            <MudItem xs="12" sm="4">
+                            <MudItem xs="12" sm="3" md="6">
                                 <MudPaper Class="pa-4 mud-height-full">
                                     <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
                                     @if (success)
@@ -173,8 +173,8 @@ else
         {
             if (id > 0)
             {
-                model = await service.GetOrderById(id);
-                if (model is null)
+                model = await service.GetOrderById(id) ?? new();
+                if (model.Id == 0)
                 {
                     toast.Add("Record not found.", Severity.Warning);
                     return;
@@ -244,6 +244,7 @@ else
 
         var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
         var dialogRef = dlgService.Show<PromptDialog>("Delete", parameters, options);
+        
         var result = await dialogRef.Result;
 
         return !result.Canceled && (result.Data is bool ok && ok);

@@ -8,6 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Models\Database\app.db" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Models\Database\app.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
@@ -28,7 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Database\" />
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
