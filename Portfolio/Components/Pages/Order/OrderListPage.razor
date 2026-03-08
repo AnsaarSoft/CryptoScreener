@@ -68,26 +68,27 @@ else
             <MudItem xs="12">
                 <MudPaper Elevation="0" Class="pa-0 fill-height">
 
-                    <MudDataGrid Class="custome-class-muddatagrid"  Items="@collection" HorizontalScrollbar="true" Bordered="true" Dense="true" Filterable="false" QuickFilter="FilterGrid">
+                    <MudDataGrid Class="custome-class-muddatagrid" Items="@collection" HorizontalScrollbar="true" Bordered="true" Dense="true" Filterable="false" QuickFilter="FilterGrid">
                         <ToolBarContent>
                             <MudText Typo="Typo.h6">List of Tokkens</MudText>
                             <MudSpacer />
                             <MudTextField @bind-Value="SearchText" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
                                           AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                         </ToolBarContent>
-                        <Columns >
-                            <TemplateColumn StickyLeft="true">
+                        <Columns>
+                            <TemplateColumn StickyLeft="true" Title="Action">
                                 <CellTemplate>
                                     <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Medium" OnClick="@(() => EditOrder(context.Item.Id))" />
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Error" Size="Size.Medium" OnClick="@(() => DeleteOrder(context.Item.Id))" />
                                 </CellTemplate>
                             </TemplateColumn>
 
-                            <PropertyColumn Property="x => x.Name" Title="Symbol"  />
-                            <PropertyColumn Property="x => x.Symbol" Title="Token"  />
-                            <PropertyColumn Property="x => x.BuyPrice" Title="Price"  />
-                            <PropertyColumn Property="x => x.Quantity" title="Quantity"  />
-                            <PropertyColumn Property="x => x.InvestedAmount" Format="C2" Title="Invested"  />
+                            <PropertyColumn Property="x => x.Name" Title="Symbol" CellClass="text-align: center;" />
+                            <PropertyColumn Property="x => x.Symbol" Title="Token" />
+                            <PropertyColumn Property="x => x.BuyPrice" Title="Price" />
+                            <PropertyColumn Property="x => x.Quantity" title="Quantity" />
+                            <PropertyColumn Property="x => x.InvestedAmount" Format="C2" Title="Invested" />
+                            <PropertyColumn Property="x => x.OrderBuyDate" Format="dd MMM yyyy HH:mm" Title="Order Date" />
                         </Columns>
                         <PagerContent>
                             <MudDataGridPager T="OrderModel" />
@@ -195,7 +196,7 @@ else
             if (id > 0)
             {
                 var confirmed = await DeleteDialogCall();
-                
+
                 if (confirmed)
                 {
                     var result1 = await service.DeleteOrder(id);
@@ -244,7 +245,7 @@ else
 
         var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
         var dialogRef = dlgService.Show<PromptDialog>("Delete", parameters, options);
-        
+
         var result = await dialogRef.Result;
 
         return !result.Canceled && (result.Data is bool ok && ok);

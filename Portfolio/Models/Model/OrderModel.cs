@@ -26,6 +26,7 @@ namespace Portfolio.Models.Model
             get => Quantity > 0 && BuyPrice > 0 ? Quantity * BuyPrice : 0;
             set { } 
         }
+        public DateTime? OrderBuyDate { get; set; }
 
     }
 }
